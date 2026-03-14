@@ -1,4 +1,4 @@
-const API_KEY = "AIzaSyB01WU3XytsDb1cB3C0wQS1mgzH1L9_J4E"; 
+const API_KEY = "AIzaSyBiGukWQmBTa8Lu7TQTjjREKwcxuEf7Nvg"; 
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
