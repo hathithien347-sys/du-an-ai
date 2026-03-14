@@ -1,59 +1,49 @@
-// 1. PHẢI CÓ API KEY Ở ĐÂY
-const API_KEY = "AIzaSyBiGukWQmBTa8Lu7TQTjjREKwcxuEf7Nvg"; 
+// 1. Hãy đảm bảo dán API KEY của bạn vào đây
+const API_KEY = "AIzaSyB01WU3XytsDb1cB3C0wQS1mgzH1L9_J4E"; 
 
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
 
-// 2. PHẢI CÓ SỰ KIỆN CLICK NÀY NÚT MỚI CHẠY ĐƯỢC
 analyzeBtn.addEventListener('click', async () => {
     const text = document.getElementById('userInput').value.trim();
     if (!text) return alert("Vui lòng nhập nội dung!");
 
-    // Hiển thị vòng xoay chờ
     loader.classList.remove('hidden');
     resultSection.classList.add('hidden');
 
     try {
-        // 3. ĐƯỜNG DẪN V1 CHUẨN
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // SỬA LẠI ĐƯỜNG DẪN THÀNH v1beta
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
-                    parts: [{ text: `Phân tích cảm xúc văn bản này: "${text}". Chỉ trả về duy nhất 1 chuỗi JSON theo mẫu: {"sentiment": "Tích cực/Tiêu cực/Trung lập", "score": 80, "explanation": "lý do"}` }]
+                    parts: [{ text: `Phân tích cảm xúc: "${text}". Trả về JSON: {"sentiment": "Tích cực/Tiêu cực/Trung lập", "score": 80, "explanation": "Lý do"}` }]
                 }]
             })
         });
 
         const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
 
-        if (data.error) {
-            throw new Error(data.error.message);
-        }
-
-        // 4. LẤY VÀ LÀM SẠCH JSON
         let rawText = data.candidates[0].content.parts[0].text;
-        const jsonStart = rawText.indexOf('{');
-        const jsonEnd = rawText.lastIndexOf('}') + 1;
-        const cleanJson = rawText.substring(jsonStart, jsonEnd);
-        
+        // Làm sạch dữ liệu JSON phòng trường hợp AI trả về markdown
+        const cleanJson = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
         const result = JSON.parse(cleanJson);
         
-        // Gọi hàm hiển thị kết quả lên màn hình
         displayResult(result);
 
     } catch (error) {
         console.error(error);
-        alert("Lỗi rồi: " + error.message);
+        alert("Lỗi: " + error.message);
     } finally {
         loader.classList.add('hidden');
     }
 });
 
-// 5. HÀM HIỂN THỊ (PHẢI CÓ ĐỂ RA MÀU XANH/ĐỎ)
 function displayResult(result) {
     const label = document.getElementById('sentimentLabel');
     const icon = document.getElementById('sentimentIcon');
