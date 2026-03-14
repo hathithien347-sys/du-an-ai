@@ -2,7 +2,7 @@ const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
 
-// 1. DÁN LINK GOOGLE WEB APP (LINK /exec) CỦA BẠN VÀO ĐÂY
+// DÁN LINK DÀI (KO CÓ DẤU ...) VÀO ĐÂY
 const sheetURL = 'https://script.google.com/macros/s/AKfycbwqh3vld40F0CmjGdsj5q7UiaOVqz0BrYX2Dkj-TMD4u2Ff4GNncLEI1PWUIRZILNLe/exec';
 
 const keywords = {
@@ -25,38 +25,18 @@ analyzeBtn.addEventListener('click', () => {
         keywords.positive.forEach(word => { if (lowerText.includes(word)) posCount++; });
         keywords.negative.forEach(word => { if (lowerText.includes(word)) negCount++; });
 
-        let result = {
-            sentiment: "Trung lập",
-            score: 50,
-            explanation: "Văn bản bình thường, không có từ ngữ biểu cảm mạnh."
-        };
-
-        if (posCount > negCount) {
-            result.sentiment = "Tích cực";
-            result.score = 70 + (posCount * 5);
-            result.explanation = "Văn bản chứa nhiều từ ngữ khen ngợi.";
-        } else if (negCount > posCount) {
-            result.sentiment = "Tiêu cực";
-            result.score = 30 - (negCount * 5);
-            result.explanation = "Văn bản chứa các từ ngữ không hài lòng.";
-        }
-
-        if (result.score > 100) result.score = 100;
-        if (result.score < 0) result.score = 5;
+        let result = { sentiment: "Trung lập", score: 50, explanation: "Bình thường." };
+        if (posCount > negCount) { result = { sentiment: "Tích cực", score: 80, explanation: "Hài lòng." }; }
+        else if (negCount > posCount) { result = { sentiment: "Tiêu cực", score: 20, explanation: "Không hài lòng." }; }
 
         displayResult(result);
 
-        // 2. DÒNG GỬI DỮ LIỆU VỀ TRANG QUẢN TRỊ (GOOGLE SHEET)
+        // LỆNH QUAN TRỌNG NHẤT: GỬI DỮ LIỆU ĐI
         fetch(sheetURL, {
             method: 'POST',
-            mode: 'no-cors', // Quan trọng để tránh lỗi bảo mật
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text: text,
-                sentiment: result.sentiment,
-                score: result.score
-            })
-        });
+            mode: 'no-cors',
+            body: JSON.stringify({ text: text, sentiment: result.sentiment, score: result.score })
+        }).then(() => console.log("Đã gửi!"));
 
         loader.classList.add('hidden');
     }, 500);
@@ -64,23 +44,10 @@ analyzeBtn.addEventListener('click', () => {
 
 function displayResult(result) {
     const label = document.getElementById('sentimentLabel');
-    const icon = document.getElementById('sentimentIcon');
     const explanation = document.getElementById('explanation');
     const scoreFill = document.getElementById('scoreFill');
-
-    resultSection.classList.remove('hidden', 'status-positive', 'status-negative', 'status-neutral');
+    resultSection.classList.remove('hidden');
     label.innerText = result.sentiment;
     explanation.innerText = result.explanation;
     scoreFill.style.width = `${result.score}%`;
-
-    if (result.sentiment === "Tích cực") {
-        resultSection.classList.add('status-positive');
-        icon.innerHTML = '😊';
-    } else if (result.sentiment === "Tiêu cực") {
-        resultSection.classList.add('status-negative');
-        icon.innerHTML = '😠';
-    } else {
-        resultSection.classList.add('status-neutral');
-        icon.innerHTML = '😐';
-    }
 }
