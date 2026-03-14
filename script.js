@@ -1,4 +1,6 @@
+// 1. DÁN API KEY MỚI VÀO ĐÂY
 const API_KEY = "AIzaSyBiGukWQmBTa8Lu7TQTjjREKwcxuEf7Nvg"; 
+
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
@@ -16,24 +18,25 @@ analyzeBtn.addEventListener('click', async () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
-                    parts: [{ text: `Phân tích cảm xúc văn bản này: "${text}". Chỉ trả về duy nhất 1 chuỗi JSON theo mẫu, không kèm giải thích bên ngoài: {"sentiment": "Tích cực/Tiêu cực/Trung lập", "score": 80, "explanation": "lý do"}` }]
+                    parts: [{ text: `Phân tích cảm xúc văn bản sau: "${text}". Trả về JSON duy nhất: {"sentiment": "Tích cực/Tiêu cực/Trung lập", "score": 80, "explanation": "Lý do ngắn gọn"}` }]
                 }]
             })
         });
 
         const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
+        if (data.error) throw new Error("API Key không hợp lệ hoặc hết hạn!");
 
-        // ĐOẠN QUAN TRỌNG: Lọc bỏ mọi ký tự lạ nếu AI trả về sai định dạng
-        let rawOutput = data.candidates[0].content.parts[0].text;
-        const cleanJson = rawOutput.substring(rawOutput.indexOf('{'), rawOutput.lastIndexOf('}') + 1);
+        // Lọc code JSON từ phản hồi của AI
+        let rawText = data.candidates[0].content.parts[0].text;
+        const jsonStart = rawText.indexOf('{');
+        const jsonEnd = rawText.lastIndexOf('}') + 1;
+        const jsonString = rawText.substring(jsonStart, jsonEnd);
         
-        const result = JSON.parse(cleanJson);
+        const result = JSON.parse(jsonString);
         displayResult(result);
 
     } catch (error) {
-        console.error(error);
-        alert("Có lỗi: " + error.message);
+        alert("Lỗi: " + error.message);
     } finally {
         loader.classList.add('hidden');
     }
