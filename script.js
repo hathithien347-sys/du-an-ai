@@ -2,54 +2,49 @@ const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
 
-// Dán link Web App đầy đủ của bạn vào đây (Link kết thúc bằng /exec)
-const sheetURL = 'https://script.google.com/macros/s/AKfycbwqh3vld40F0CmjGdsj5q7UiaOVqz0BrYX2Dkj-TMD4u2Ff4GNncLEI1PWUIRZILNLe/exec';
-
+// Danh sách từ vựng đơn giản để phân tích (Bạn có thể thêm từ tùy ý)
 const keywords = {
     positive: ['ngon', 'tốt', 'đẹp', 'tuyệt', 'vời', 'thích', 'yêu', 'rẻ', 'nhanh', 'hài lòng', 'chuẩn'],
-    negative: ['tệ', 'dở', 'xấu', 'kém', 'đắt', 'chậm', 'thất vọng', 'ghét', 'bẩn', 'lâu', 'ko ngon', 'không ngon']
+    negative: ['tệ', 'dở', 'xấu', 'kém', 'đắt', 'chậm', 'thất vọng', 'không thích', 'ghét', 'bẩn', 'lâu']
 };
 
 analyzeBtn.addEventListener('click', () => {
-    const text = document.getElementById('userInput').value.trim();
+    const text = document.getElementById('userInput').value.trim().toLowerCase();
     if (!text) return alert("Vui lòng nhập nội dung!");
 
     loader.classList.remove('hidden');
     resultSection.classList.add('hidden');
 
+    // Giả lập thời gian xử lý 0.5 giây cho giống thật
     setTimeout(() => {
-        let lowerText = text.toLowerCase();
+        let score = 50; // Điểm trung bình ban đầu
         let posCount = 0;
         let negCount = 0;
 
-        keywords.positive.forEach(word => { if (lowerText.includes(word)) posCount++; });
-        keywords.negative.forEach(word => { if (lowerText.includes(word)) negCount++; });
+        // Thuật toán đếm từ
+        keywords.positive.forEach(word => { if (text.includes(word)) posCount++; });
+        keywords.negative.forEach(word => { if (text.includes(word)) negCount++; });
 
         let result = {
             sentiment: "Trung lập",
             score: 50,
-            explanation: "Văn bản bình thường."
+            explanation: "Văn bản bình thường, không có từ ngữ biểu cảm mạnh."
         };
 
         if (posCount > negCount) {
-            result = { sentiment: "Tích cực", score: 85, explanation: "Khách hàng hài lòng." };
+            result.sentiment = "Tích cực";
+            result.score = 70 + (posCount * 5);
+            result.explanation = "Văn bản chứa nhiều từ ngữ khen ngợi và hài lòng.";
         } else if (negCount > posCount) {
-            result = { sentiment: "Tiêu cực", score: 15, explanation: "Khách hàng không hài lòng." };
+            result.sentiment = "Tiêu cực";
+            result.score = 30 - (negCount * 5);
+            result.explanation = "Văn bản chứa các từ ngữ thể hiện sự không hài lòng.";
         }
 
+        if (result.score > 100) result.score = 100;
+        if (result.score < 0) result.score = 5;
+
         displayResult(result);
-
-        // Gửi dữ liệu về Google Sheets
-        fetch(sheetURL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({
-                text: text,
-                sentiment: result.sentiment,
-                score: result.score
-            })
-        });
-
         loader.classList.add('hidden');
     }, 500);
 });
@@ -60,14 +55,11 @@ function displayResult(result) {
     const explanation = document.getElementById('explanation');
     const scoreFill = document.getElementById('scoreFill');
 
-    // Xóa tất cả class màu cũ
     resultSection.classList.remove('hidden', 'status-positive', 'status-negative', 'status-neutral');
-    
     label.innerText = result.sentiment;
     explanation.innerText = result.explanation;
     scoreFill.style.width = `${result.score}%`;
 
-    // Kích hoạt màu sắc dựa trên cảm xúc
     if (result.sentiment === "Tích cực") {
         resultSection.classList.add('status-positive');
         icon.innerHTML = '😊';
