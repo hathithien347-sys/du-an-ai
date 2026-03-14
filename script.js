@@ -1,4 +1,4 @@
-const API_KEY = "AIzaSyB01WU3XytsDblcB3C0wQSlmgzHlL9_J4E";
+const API_KEY = "AIzaSyB01WU3XytsDb1cB3C0wQS1mgzH1L9_J4E"; // Key bạn đã điền
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
@@ -7,32 +7,40 @@ analyzeBtn.addEventListener('click', async () => {
     const text = document.getElementById('userInput').value.trim();
     if (!text) return alert("Vui lòng nhập nội dung!");
 
-    // Hiển thị trạng thái loading
     loader.classList.remove('hidden');
     resultSection.classList.add('hidden');
 
     try {
+        // Sử dụng model gemini-1.5-flash
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{
-                    parts: [{ text: `Phân tích cảm xúc của đoạn văn bản sau và trả về kết quả theo định dạng JSON gồm: sentiment (Tích cực, Tiêu cực, hoặc Trung lập), score (0-100), explanation (1 câu giải thích ngắn gọn). Văn bản: "${text}"` }]
+                    parts: [{ text: `Phân tích cảm xúc văn bản này: "${text}". Trả về duy nhất 1 chuỗi JSON: {"sentiment": "Tích cực/Tiêu cực/Trung lập", "score": 0-100, "explanation": "lý do ngắn gọn"}` }]
                 }]
             })
         });
 
         const data = await response.json();
-        const rawOutput = data.candidates[0].content.parts[0].text;
         
-        // Xử lý chuỗi JSON từ AI (đôi khi AI trả về markdown ```json ... ```)
-        const cleanJson = rawOutput.replace(/```json|```/g, '');
-        const result = JSON.parse(cleanJson);
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
 
+        let rawOutput = data.candidates[0].content.parts[0].text;
+        
+        // Xử lý để lấy đúng đoạn JSON kể cả khi AI trả về markdown
+        const jsonStart = rawOutput.indexOf('{');
+        const jsonEnd = rawOutput.lastIndexOf('}') + 1;
+        const cleanJson = rawOutput.substring(jsonStart, jsonEnd);
+        
+        const result = JSON.parse(cleanJson);
         displayResult(result);
+
     } catch (error) {
-        alert("Có lỗi xảy ra khi gọi API. Kiểm tra lại API Key hoặc kết nối mạng.");
-        console.error(error);
+        console.error("Lỗi chi tiết:", error);
+        alert("Lỗi: " + error.message);
     } finally {
         loader.classList.add('hidden');
     }
@@ -53,14 +61,14 @@ function displayResult(result) {
     if (result.sentiment.includes("Tích cực")) {
         resultSection.classList.add('status-positive');
         icon.innerHTML = '<i class="fas fa-laugh-beam"></i>';
-        scoreFill.style.backgroundColor = 'var(--success)';
+        scoreFill.style.backgroundColor = '#22c55e';
     } else if (result.sentiment.includes("Tiêu cực")) {
         resultSection.classList.add('status-negative');
         icon.innerHTML = '<i class="fas fa-angry"></i>';
-        scoreFill.style.backgroundColor = 'var(--danger)';
+        scoreFill.style.backgroundColor = '#ef4444';
     } else {
         resultSection.classList.add('status-neutral');
         icon.innerHTML = '<i class="fas fa-meh"></i>';
-        scoreFill.style.backgroundColor = 'var(--neutral)';
+        scoreFill.style.backgroundColor = '#64748b';
     }
 }
