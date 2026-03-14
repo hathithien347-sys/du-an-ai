@@ -1,5 +1,5 @@
 // 1. Hãy đảm bảo dán API KEY của bạn vào đây
-const API_KEY = "AIzaSyB01WU3XytsDb1cB3C0wQS1mgzH1L9_J4E"; 
+const API_KEY = "AIzaSyCB77nC9J4JlyzY8ezNPfGGKVCmLhR5o_g"; 
 
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
