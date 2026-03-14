@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment AI | Phân Tích Cảm Xúc Khách Hàng</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-robot"></i> Sentiment <span class="highlight">AI</span></h1>
+            <p>Khám phá cảm xúc ẩn sau phản hồi của khách hàng</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <textarea id="userInput" placeholder="Nhập phản hồi của khách hàng vào đây..."></textarea>
+                <button id="analyzeBtn">Phân Tích Ngay <i class="fas fa-paper-plane"></i></button>
+            </div>
+
+            <div id="loader" class="hidden">
+                <div class="spinner"></div>
+                <p>Đang giải mã cảm xúc...</p>
+            </div>
+
+            <div id="resultSection" class="result-card hidden">
+                <div class="result-header">
+                    <span>Kết quả phân tích:</span>
+                    <strong id="sentimentLabel">Tích cực</strong>
+                </div>
+                <div class="sentiment-icon" id="sentimentIcon">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <p id="explanation"></p>
+                <div class="score-bar">
+                    <div id="scoreFill" style="width: 80%;"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2026 Student Project - Power by Gemini AI Studio</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
