@@ -1,47 +1,52 @@
-// 1. Hãy đảm bảo dán API KEY của bạn vào đây
-const API_KEY = "AIzaSyCB77nC9J4JlyzY8ezNPfGGKVCmLhR5o_g"; 
-
 const analyzeBtn = document.getElementById('analyzeBtn');
 const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
 
-analyzeBtn.addEventListener('click', async () => {
-    const text = document.getElementById('userInput').value.trim();
+// Danh sách từ vựng đơn giản để phân tích (Bạn có thể thêm từ tùy ý)
+const keywords = {
+    positive: ['ngon', 'tốt', 'đẹp', 'tuyệt', 'vời', 'thích', 'yêu', 'rẻ', 'nhanh', 'hài lòng', 'chuẩn'],
+    negative: ['tệ', 'dở', 'xấu', 'kém', 'đắt', 'chậm', 'thất vọng', 'không thích', 'ghét', 'bẩn', 'lâu']
+};
+
+analyzeBtn.addEventListener('click', () => {
+    const text = document.getElementById('userInput').value.trim().toLowerCase();
     if (!text) return alert("Vui lòng nhập nội dung!");
 
     loader.classList.remove('hidden');
     resultSection.classList.add('hidden');
 
-    try {
-        // SỬA LẠI ĐƯỜNG DẪN THÀNH v1beta
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // Giả lập thời gian xử lý 0.5 giây cho giống thật
+    setTimeout(() => {
+        let score = 50; // Điểm trung bình ban đầu
+        let posCount = 0;
+        let negCount = 0;
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: `Phân tích cảm xúc: "${text}". Trả về JSON: {"sentiment": "Tích cực/Tiêu cực/Trung lập", "score": 80, "explanation": "Lý do"}` }]
-                }]
-            })
-        });
+        // Thuật toán đếm từ
+        keywords.positive.forEach(word => { if (text.includes(word)) posCount++; });
+        keywords.negative.forEach(word => { if (text.includes(word)) negCount++; });
 
-        const data = await response.json();
-        if (data.error) throw new Error(data.error.message);
+        let result = {
+            sentiment: "Trung lập",
+            score: 50,
+            explanation: "Văn bản bình thường, không có từ ngữ biểu cảm mạnh."
+        };
 
-        let rawText = data.candidates[0].content.parts[0].text;
-        // Làm sạch dữ liệu JSON phòng trường hợp AI trả về markdown
-        const cleanJson = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
-        const result = JSON.parse(cleanJson);
-        
+        if (posCount > negCount) {
+            result.sentiment = "Tích cực";
+            result.score = 70 + (posCount * 5);
+            result.explanation = "Văn bản chứa nhiều từ ngữ khen ngợi và hài lòng.";
+        } else if (negCount > posCount) {
+            result.sentiment = "Tiêu cực";
+            result.score = 30 - (negCount * 5);
+            result.explanation = "Văn bản chứa các từ ngữ thể hiện sự không hài lòng.";
+        }
+
+        if (result.score > 100) result.score = 100;
+        if (result.score < 0) result.score = 5;
+
         displayResult(result);
-
-    } catch (error) {
-        console.error(error);
-        alert("Lỗi: " + error.message);
-    } finally {
         loader.classList.add('hidden');
-    }
+    }, 500);
 });
 
 function displayResult(result) {
@@ -55,10 +60,10 @@ function displayResult(result) {
     explanation.innerText = result.explanation;
     scoreFill.style.width = `${result.score}%`;
 
-    if (result.sentiment.includes("Tích cực")) {
+    if (result.sentiment === "Tích cực") {
         resultSection.classList.add('status-positive');
         icon.innerHTML = '😊';
-    } else if (result.sentiment.includes("Tiêu cực")) {
+    } else if (result.sentiment === "Tiêu cực") {
         resultSection.classList.add('status-negative');
         icon.innerHTML = '😠';
     } else {
