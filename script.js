@@ -3,7 +3,7 @@ const resultSection = document.getElementById('resultSection');
 const loader = document.getElementById('loader');
 
 // 1. DÁN LINK GOOGLE WEB APP (LINK /exec) CỦA BẠN VÀO ĐÂY
-const sheetURL = 'https://script.google.com/macros/s/AKfyc.../exec'; 
+const sheetURL = 'https://script.google.com/macros/s/AKfycbwqh3vld40F0CmjGdsj5q7UiaOVqz0BrYX2Dkj-TMD4u2Ff4GNncLEI1PWUIRZILNLe/exec';
 
 const keywords = {
     positive: ['ngon', 'tốt', 'đẹp', 'tuyệt', 'vời', 'thích', 'yêu', 'rẻ', 'nhanh', 'hài lòng', 'chuẩn'],
